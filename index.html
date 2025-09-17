@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Jewelry Valuation Form</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .form-section {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3498db;
+        }
+        .section-title {
+            font-weight: bold;
+            margin: 15px 0 10px;
+            font-size: 18px;
+            color: #2c3e50;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+            background: white;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+            padding: 10px;
+            text-align: left;
+        }
+        td {
+            padding: 8px;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        input:focus, select:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .delete-btn {
+            background-color: #e74c3c;
+            padding: 5px 8px;
+            font-size: 12px;
+        }
+        .delete-btn:hover {
+            background-color: #c0392b;
+        }
+        .error {
+            color: #e74c3c;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+        .flex-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .flex-row div {
+            flex: 1;
+            min-width: 200px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .logo-preview {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .logo-preview img {
+            max-width: 150px;
+            max-height: 100px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Jewelry Valuation Form</h2>
+
+    <!-- Customer Details -->
+    <div class="form-section">
+        <div class="section-title">Customer Details</div>
+        <div class="flex-row">
+            <div>
+                <label for="customer_name">Customer Name</label>
+                <input type="text" id="customer_name" required>
+            </div>
+            <div>
+                <label for="swd_name">S/W/D of</label>
+                <input type="text" id="swd_name" required>
+            </div>
+            <div>
+                <label for="resident">Resident of</label>
+                <input type="text" id="resident" required>
+            </div>
+        </div>
+        <div class="flex-row">
+            <div>
+                <label for="bank_branch">Bank Branch</label>
+                <input type="text" id="bank_branch" required>
+            </div>
+            <div>
+                <label for="acc_no">Account No.</label>
+                <input type="text" id="acc_no" required>
+            </div>
+            <div>
+                <label for="cashier">Cashier Name</label>
+                <input type="text" id="cashier" required>
+            </div>
+            <div>
+                <label for="transaction_date">Appraisal Date</label>
+                <input type="date" id="transaction_date" required>
+            </div>
+        </div>
+    </div>
+
+    <!-- Valuation Rate Table -->
+    <div class="form-section">
+        <div class="section-title">Valuation Rates</div>
+        <table id="val_rate_table">
+            <thead>
+                <tr>
+                    <th style="width: 5%; text-align: center;">No.</th>
+                    <th style="width: 20%;">Carat</th>
+                    <th style="width: 20%;">Rate (₹/gram)</th>
+                    <th style="width: 10%;">Action</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <button onclick="addRateRow()">Add Rate</button>
+    </div>
+
+    <!-- Item Description Table -->
+    <div class="form-section">
+        <div class="section-title">Item Description</div>
+        <table id="items_table">
+            <thead>
+                <tr>
+                    <th style="width: 5%; text-align: center;">No.</th>
+                    <th style="width: 25%;">Description</th>
+                    <th style="width: 5%;">Qty</th>
+                    <th style="width: 10%;">Gross Weight (g)</th>
+                    <th style="width: 15%;">Precious Stones (g)</th>
+                    <th style="width: 10%;">Purity (K)</th>
+                    <th style="width: 10%;">Net Weight (g)</th>
+                    <th style="width: 15%;">Market Value (₹)</th>
+                    <th style="width: 5%;">Action</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <button onclick="addItemRow()">Add Item</button>
+    </div>
+
+    <div id="error_message" class="error"></div>
+    
+    <div class="action-buttons">
+        <button onclick="resetForm()">Reset Form</button>
+        <button onclick="generatePDF()" style="background-color: #27ae60;">Generate PDF</button>
+    </div>
+</div>
+
+<script>
+const { jsPDF } = window.jspdf;
+
+// Function to load logo from local folder
+function loadLogo() {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null);
+        img.src = 'logo.png'; // Make sure logo.png is in the same folder
+    });
+}
+
+function addRateRow() {
+    const table = document.querySelector("#val_rate_table tbody");
+    const rowIndex = table.rows.length + 1;
+    let row = table.insertRow();
+    row.innerHTML = `
+        <td><input type="text" value="${rowIndex}" readonly style="text-align: center;"></td>
+        <td>
+            <select required>
+                <option value="" disabled selected>Select Carat</option>
+                <option value="18K">18K</option>
+                <option value="20K">20K</option>
+                <option value="22K">22K</option>
+            </select>
+        </td>
+        <td><input type="number" step="0.01" min="0" placeholder="Rate" required></td>
+        <td style="text-align: center;"><button class="delete-btn" onclick="deleteRateRow(this)">❌</button></td>
+    `;
+}
+
+function deleteRateRow(btn) {
+    btn.closest("tr").remove();
+    document.querySelectorAll("#val_rate_table tbody tr").forEach((row, idx) => {
+        row.cells[0].querySelector("input").value = idx + 1;
+    });
+}
+
+function addItemRow() {
+    const table = document.querySelector("#items_table tbody");
+    const rowIndex = table.rows.length + 1;
+    let row = table.insertRow();
+    row.innerHTML = `
+        <td><input type="text" value="${rowIndex}" readonly style="text-align: center;"></td>
+        <td><input type="text" placeholder="Description" required></td>
+        <td><input type="number" min="1" placeholder="Qty" required></td>
+        <td><input type="number" step="0.01" min="0" placeholder="Gross" oninput="calcRow(this)" required></td>
+        <td><input type="number" step="0.01" readonly></td>
+        <td>
+            <select onchange="calcRow(this)" required>
+                <option value="" disabled selected>Select Purity</option>
+                <option value="18K">18K</option>
+                <option value="20K">20K</option>
+                <option value="22K">22K</option>
+            </select>
+        </td>
+        <td><input type="number" step="0.01" min="0" placeholder="Net" oninput="calcRow(this)" required></td>
+        <td><input type="number" step="1" readonly></td>
+        <td style="text-align: center;"><button class="delete-btn" onclick="deleteItemRow(this)">❌</button></td>
+    `;
+}
+
+function deleteItemRow(btn) {
+    btn.closest("tr").remove();
+    document.querySelectorAll("#items_table tbody tr").forEach((row, idx) => {
+        row.cells[0].querySelector("input").value = idx + 1;
+    });
+}
+
+function calcRow(el) {
+    let row = el.closest("tr");
+    let gross = parseFloat(row.cells[3].querySelector("input").value) || 0;
+    let net = parseFloat(row.cells[6].querySelector("input").value) || 0;
+    let purity = row.cells[5].querySelector("select").value.trim().toLowerCase();
+
+    // Additional weight = gross - net (using abs to handle either way)
+    let additional = Math.abs(gross - net);
+    row.cells[4].querySelector("input").value = additional.toFixed(2);
+
+    let rate = getRateForPurity(purity);
+    let value = rate ? Math.round(rate * net) : 0;
+    row.cells[7].querySelector("input").value = value;
+}
+
+function getRateForPurity(purity) {
+    let rows = document.querySelectorAll("#val_rate_table tbody tr");
+    for (let r of rows) {
+        let c = r.cells[1].querySelector("select").value.trim().toLowerCase();
+        let rate = parseFloat(r.cells[2].querySelector("input").value) || 0;
+        if (c === purity) return rate;
+    }
+    return null;
+}
+
+function validateForm() {
+    const rateRows = document.querySelectorAll("#val_rate_table tbody tr");
+    const itemRows = document.querySelectorAll("#items_table tbody tr");
+    const customerName = document.getElementById("customer_name").value.trim();
+    
+    if (!customerName) { showError("Please enter customer name."); return false; }
+    if (rateRows.length === 0) { showError("Please add at least one valuation rate."); return false; }
+    if (itemRows.length === 0) { showError("Please add at least one item."); return false; }
+    
+    // Validate all rate rows
+    for (let r of rateRows) {
+        if (!r.cells[1].querySelector("select").value.trim()) {
+            showError("Please select carat for all rates."); return false;
+        }
+        if (!r.cells[2].querySelector("input").value) {
+            showError("Please enter rate for all carats."); return false;
+        }
+    }
+    
+    // Validate all item rows
+    for (let r of itemRows) {
+        if (!r.cells[1].querySelector("input").value.trim()) {
+            showError("Please enter description for all items."); return false;
+        }
+        if (!r.cells[2].querySelector("input").value) {
+            showError("Please enter quantity for all items."); return false;
+        }
+        if (!r.cells[3].querySelector("input").value) {
+            showError("Please enter gross weight for all items."); return false;
+        }
+        if (!r.cells[5].querySelector("select").value.trim()) {
+            showError("Please select purity for all items."); return false;
+        }
+        if (!r.cells[6].querySelector("input").value) {
+            showError("Please enter net weight for all items."); return false;
+        }
+    }
+    
+    return true;
+}
+
+function showError(message) {
+    document.getElementById("error_message").textContent = message;
+    setTimeout(() => document.getElementById("error_message").textContent = "", 5000);
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return "";
+    const date = new Date(dateStr);
+    return `${String(date.getDate()).padStart(2, "0")}-${String(date.getMonth()+1).padStart(2, "0")}-${date.getFullYear()}`;
+}
+
+function resetForm() {
+    if (confirm("Are you sure you want to reset the entire form?")) {
+        document.querySelectorAll("input, select").forEach(el => {
+            if (el.type !== "button" && el.type !== "submit") {
+                el.value = "";
+            }
+        });
+        document.querySelectorAll("#val_rate_table tbody, #items_table tbody").forEach(tbody => {
+            tbody.innerHTML = "";
+        });
+    }
+}
+
+async function generatePDF() {
+    if (!validateForm()) return;
+    
+    let doc = new jsPDF();
+    let y = 10;
+
+    // Add logo from local folder
+    try {
+        const logo = await loadLogo();
+        if (logo) {
+            doc.addImage(logo, 'PNG', 10, y, 40, 20);
+        }
+    } catch (e) {
+        console.error("Error loading logo:", e);
+    }
+
+    // Header - Right side text
+    doc.setFontSize(10);
+    doc.text("Rishabh Raj Soni", 190, y, { align: "right" });
+    doc.setFont("helvetica", "bold");
+    doc.text("GST No.: 08CXXPS2948K1ZR", 190, y+5, { align: "right" });
+    doc.text("ACC No.: 32008638787", 190, y+10, { align: "right" });
+    doc.text(" 41060977659", 190, y+15, { align: "right" });
+    y += 20;
+
+    // Company name centered
+    doc.setFontSize(20);
+    doc.setFont("helvetica", "bold");
+    doc.text("SAKSHI JEWELLERS", 105, y, { align: "center" });
+    y += 6;
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text("Bus Stand, Danta (Sikar) Raj, 332702", 105, y, { align: "center" });
+    y += 5;
+    doc.text("Mob.: 9509409120, 8005629391", 105, y, { align: "center" });
+    y += 10;
+
+    // Title & intro
+    doc.text("Annexure 10", 190, y, { align: "right" });
+    y += 8;
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("APPRAISER CERTIFICATE", 105, y, { align: "center" });
+    y += 10;
+
+    const bankBranch = document.getElementById("bank_branch").value;
+    const accNo = document.getElementById("acc_no").value;
+    const customerName = document.getElementById("customer_name").value;
+    const swdName = document.getElementById("swd_name").value;
+    const resident = document.getElementById("resident").value;
+    const cashier = document.getElementById("cashier").value;
+    const transactionDate = formatDate(document.getElementById("transaction_date").value);
+
+    doc.setFontSize(10);
+    doc.text(`The Branch Manager`, 10, y);
+    y += 5;
+    doc.text(`State Bank of India`, 10, y);
+    y += 5;
+    doc.text(`Branch: ${bankBranch}`, 10, y);
+    y += 8;
+    doc.text(`Acc No.: ${accNo}`, 190, y, { align: "right" });
+    y += 8;
+    doc.text("Dear Sir/Madam,", 10, y);
+    y += 8;
+
+    let cert = `I hereby certify that Sri/Smt. ${customerName}, S/W/D of ${swdName}, Resident of ${resident}, who has sought Gold Loan from the Bank is not my relative and the Gold against which the loan is sought is not purchased from me. The ornaments/Coins have been weighed and appraised by me on ${transactionDate} in the presence of Sri/Smt. ${cashier} and the exact weight, purity of the metal and market value of each item as on date are indicated below.`;
+    doc.text(cert, 10, y, { maxWidth: 190 });
+    y += doc.getTextDimensions(cert, { maxWidth: 190 }).h + 5;
+
+    // Market rates (corrected format without symbols or extra characters, using comma separator, no spaces around -)
+    let valRates = [];
+    document.querySelectorAll("#val_rate_table tbody tr").forEach(r => {
+        valRates.push(`${r.cells[1].querySelector("select").value.trim()}-${parseInt(r.cells[2].querySelector("input").value).toLocaleString('en-IN')}`);
+    });
+    doc.text(`Market rate per gram: ${valRates.join(",")}`, 10, y, { maxWidth: 190 });
+    y += 8;
+
+    // Items table with totals row
+    let items = [];
+    let totalQty=0, totalGross=0, totalAdditional=0, totalNet=0, totalValue=0;
+    document.querySelectorAll("#items_table tbody tr").forEach((r, idx) => {
+        let qty = parseInt(r.cells[2].querySelector("input").value) || 0;
+        let gross = parseFloat(r.cells[3].querySelector("input").value) || 0;
+        let add = parseFloat(r.cells[4].querySelector("input").value) || 0;
+        let purity = r.cells[5].querySelector("select").value;
+        let net = parseFloat(r.cells[6].querySelector("input").value) || 0;
+        let val = parseInt(r.cells[7].querySelector("input").value) || 0;
+        totalQty += qty; 
+        totalGross += gross; 
+        totalAdditional += add; 
+        totalNet += net; 
+        totalValue += val;
+        
+        items.push([
+            (idx+1).toString(),
+            r.cells[1].querySelector("input").value,
+            qty.toString(),
+            `${gross.toFixed(2)} g`,
+            `${add.toFixed(2)} g`,
+            purity,
+            `${net.toFixed(2)} g`,
+            `${val.toLocaleString('en-IN')}`
+        ]);
+    });
+    
+    // Add totals row
+    items.push([
+        { content: "Total", colSpan: 2, styles: { halign: "right", fontStyle: "bold" } },
+        { content: totalQty.toString(), styles: { fontStyle: "bold" } },
+        { content: `${totalGross.toFixed(2)} g`, styles: { fontStyle: "bold" } },
+        { content: `${totalAdditional.toFixed(2)} g`, styles: { fontStyle: "bold" } },
+        { content: "", styles: { fontStyle: "bold" } },
+        { content: `${totalNet.toFixed(2)} g`, styles: { fontStyle: "bold" } },
+        { content: `${totalValue.toLocaleString('en-IN')}`, styles: { fontStyle: "bold" } }
+    ]);
+
+    doc.autoTable({
+        head: [["No.", "Description of the Article", "Qty", "Gross Weight", "Precious Stones (g)", "Purity (K)", "Net Weight (g)", "Market Value"]],
+        body: items,
+        startY: y,
+        styles: { 
+            fontSize: 8, 
+            cellPadding: 3,
+            valign: 'middle',
+            halign: 'left'
+        },
+        columnStyles: {
+            0: { cellWidth: 8, halign: 'center' },
+            1: { cellWidth: 'auto' },
+            2: { cellWidth: 10, halign: 'center' },
+            3: { cellWidth: 20, halign: 'right' },
+            4: { cellWidth: 25, halign: 'right' },
+            5: { cellWidth: 12, halign: 'center' },
+            6: { cellWidth: 20, halign: 'right' },
+            7: { cellWidth: 25, halign: 'right' }
+        },
+        theme: "grid",
+        headStyles: { 
+            fillColor: [52, 152, 219], 
+            textColor: 255,
+            fontStyle: 'bold'
+        },
+        alternateRowStyles: {
+            fillColor: [245, 245, 245]
+        },
+        margin: { horizontal: 5 }
+    });
+    
+    y = doc.lastAutoTable.finalY + 5;
+
+    // Declaration
+    let dec = "I solemnly declare that weight, purity of the gold ornaments/precious stones indicated above are correct and I undertake to indemnify the Bank against any loss it may sustain on account of any inaccuracy in the above appraisal.";
+    doc.text(dec, 10, y, { maxWidth: 190 });
+    y += doc.getTextDimensions(dec, { maxWidth: 190 }).h + 5;
+
+    doc.text(`Place: ${bankBranch}`, 10, y); y += 5;
+    doc.text(`Date: ${transactionDate}`, 10, y); y += 8;
+
+    doc.text("Yours faithfully,", 190, y, { align: "right" }); y += 5;
+    doc.text("Name & Signature of the Appraiser: ______________", 190, y, { align: "right" }); y += 10;
+    doc.text(`Name & Signature of the Borrower: ${customerName} ___________`, 10, y); y += 8;
+    doc.text(`Cash in Charge/Cash Officer: ${cashier} _________________________`, 10, y); y += 5;
+    doc.text("Accountant/Joint Custodian/Branch Manager: _________________", 190, y, { align: "right" });
+
+    doc.save("appraiser_certificate.pdf");
+}
+
+// Add initial rows
+window.onload = function() {
+    addRateRow();
+    addItemRow();
+};
+</script>
+</body>
+</html>
