@@ -381,7 +381,7 @@
 
         <!-- Billing Items Table -->
         <div class="form-section">
-            <div class="section-title">Billing Items</div>
+            <div class="section-title">Billing Items(Gold)</div>
             <table id="bill_items_table">
                 <thead>
                     <tr>
@@ -402,6 +402,23 @@
                 <tbody></tbody>
             </table>
             <button onclick="addBillItemRow()">Add Item</button>
+        </div>
+
+        <!-- Silver Items Table (Added) -->
+        <div class="form-section">
+            <div class="section-title">Silver Items (Manual)</div>
+            <table id="silver_table">
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Qty</th>
+                        <th>Amount (₹)</th>
+                        <th style="width: 50px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <button onclick="addSilverRow()">Add Silver Item</button>
         </div>
 
         <!-- Tax & Payment Details -->
@@ -845,6 +862,17 @@
             `;
         }
 
+        function addSilverRow() {
+            const table = document.querySelector("#silver_table tbody");
+            let row = table.insertRow();
+            row.innerHTML = `
+                <td><input type="text" placeholder="Description"></td>
+                <td><input type="number" step="1" placeholder="Qty"></td>
+                <td><input type="number" step="0.01" placeholder="Amount"></td>
+                <td style="text-align: center;"><button class="delete-btn" onclick="deleteRow(this)">${deleteIcon}</button></td>
+            `;
+        }
+
         function resetBillForm() {
             if (confirm("Reset Billing Form?")) {
                 document.querySelector("#billing_section").querySelectorAll("input, select").forEach(el => {
@@ -941,8 +969,28 @@
                 ]);
             });
 
+            // Collect Silver Items
+            document.querySelectorAll("#silver_table tbody tr").forEach(r => {
+                const cells = r.cells;
+                const desc = cells[0].querySelector("input").value.trim();
+                const qty = cells[1].querySelector("input").value || "-";
+                const amt = parseFloat(cells[2].querySelector("input").value) || 0;
+
+                if (desc || amt > 0) {
+                    totalTaxable += amt; // Add to taxable amount
+                    tableData.push([
+                        tableData.length + 1,
+                        desc,
+                        "-", "-", "-", // Purity, Gross, Net
+                        qty,
+                        "-", "-", "-", "-", // Rate, Dia, Mak, DiaVal
+                        amt.toFixed(2)
+                    ]);
+                }
+            });
+
             if (tableData.length === 0) {
-                showError("Add at least one item", "bill_error_message"); return;
+                showError("Add at least one item (Gold or Silver)", "bill_error_message"); return;
             }
 
             // Taxes
@@ -1124,6 +1172,7 @@
             // Billing Init
             addBillRateRow();
             addBillItemRow();
+            addSilverRow();
             addPaymentRow();
         };
     </script>
