@@ -201,6 +201,11 @@
             min-width: 200px;
         }
 
+        .flex-row div:has(#aadhar_no) {
+            flex: 1;
+            /* Ensure it takes available space */
+        }
+
         label {
             display: block;
             margin-bottom: 5px;
@@ -265,6 +270,10 @@
                 <div>
                     <label for="acc_no">Account No.</label>
                     <input type="text" id="acc_no" required>
+                </div>
+                <div>
+                    <label for="aadhar_no">Aadhar Number</label>
+                    <input type="text" id="aadhar_no" required>
                 </div>
                 <div>
                     <label for="cashier">Cashier Name</label>
@@ -657,6 +666,7 @@
             const swdName = document.getElementById("swd_name").value;
             const resident = document.getElementById("resident").value;
             const cashier = document.getElementById("cashier").value;
+            const aadharNo = document.getElementById("aadhar_no").value;
             const transactionDate = formatDate(document.getElementById("transaction_date").value);
 
             doc.setFontSize(10);
@@ -664,7 +674,8 @@
             doc.text(`The Branch Manager`, 10, y); y += 5;
             doc.text(`State Bank of India`, 10, y); y += 5;
             doc.text(`Branch: ${bankBranch}`, 10, y); y += 8;
-            doc.text(`Acc No.: ${accNo}`, 190, y, { align: "right" }); y += 8;
+            doc.text(`Acc No.: ${accNo}`, 190, y, { align: "right" }); y += 5;
+            doc.text(`Aadhar No.: ${aadharNo}`, 190, y, { align: "right" }); y += 8;
             doc.text("Dear Sir/Madam,", 10, y); y += 8;
 
             let cert = `I hereby certify that Sri/Smt. ${customerName}, S/W/D of ${swdName}, Resident of ${resident}, who has sought Gold Loan from the Bank is not my relative and the Gold against which the loan is sought is not purchased from me. The ornaments/Coins have been weighed and appraised by me on ${transactionDate} in the presence of Sri/Smt. ${cashier} and the exact weight, purity of the metal and market value of each item as on date are indicated below.`;
